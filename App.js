@@ -52,7 +52,7 @@ export default class App extends Component {
                   alert("save:" + token);
                 }).catch((error) => {
                   //error callback
-                  alert("can't save");
+                  alert("can't save " + error);
                 })
 
                 this.setState({ token });
