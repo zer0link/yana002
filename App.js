@@ -7,7 +7,7 @@
  */
 
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View,Alert,Button } from 'react-native';
 import firebase from 'react-native-firebase';
 
 const instructions = Platform.select({
@@ -23,19 +23,45 @@ export default class App extends Component {
   constructor() {
     super();
     this.state = {
-      token: ''
+      token: '',
+      location: '',
+      deviceLocation: ''
     };
   }
 
+  findCoordinates = () => {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const location = JSON.stringify(position);
+  
+        this.setState({ location });
+        console.log(location);
+        firebase.database().ref('DeviceLocation').push({
+          token: this.state.token,
+          location: location
+        }).then((data) => {
+
+          alert("save:" + location);
+        }).catch((error) => {
+          //error callback
+          alert("can't save " + error);
+        })
+
+      },
+      error =>
+      {
+        Alert.alert(error.message);
+        console.log(error);
+      },
+      { enableHighAccuracy: false, timeout: 60000, maximumAge: 1000 }
+    );
+  }
   componentDidMount() {
     firebase.initializeApp({
       databaseURL: 'https://yana002-44365.firebaseio.com/'
     });
     console.log('Component did mount2');
 
-    // firebase.messaging().hasPermission()
-    //   .then(enabled => {
-    //     if (!enabled) {
           firebase.messaging().requestPermission()
             .then(() => {
               console.log('Permission completed');
@@ -45,7 +71,7 @@ export default class App extends Component {
             firebase.messaging().getToken()
               .then(token => {
 
-                firebase.database().ref().set({
+                firebase.database().ref("Token").push({
                   token: token
                 }).then((data) => {
 
@@ -62,36 +88,10 @@ export default class App extends Component {
                 alert(err);
               });
           }, 3000);
-    //     }
-    //   }
-    // );
-    console.log('Component done mount');
-    // firebase.auth()
-    // .signInAnonymously()
-    // .then(credential => {
-    //   if (credential) {
-    //     console.log('default app user ->', credential.user.toJSON());
-    //   }
-    // });
 
-
+    this.doThings;
   }
 
-
-//   notificationDisplayedListener() {firebase.notifications().onNotificationDisplayed((notification) => {
-//     alert('onNotificationDisplayed');
-//     // Process your notification as required
-//     // ANDROID: Remote notifications do not contain the channel ID. You will have to specify this manually if you'd like to re-display the notification.
-// })};
-//   notificationListener() {firebase.notifications().onNotification((notification) => {
-//   alert('notification');
-//     // Process your notification as required
-// })};
-
-//   componentWillMount(){
-//     this.notificationDisplayedListener();
-//     this.notificationListener();
-//   }
 
   render() {
     return (
@@ -100,6 +100,8 @@ export default class App extends Component {
         <Text style={styles.instructions}>To get started, edit App.js</Text>
         <Text style={styles.instructions}>{instructions}</Text>
         <Text style={styles.instructions}>{this.state.token}</Text>
+        <Text>{this.state.location}</Text>
+        <Button title="Press here" onPress={this.findCoordinates}>Press me</Button>
       </View>
     );
   }

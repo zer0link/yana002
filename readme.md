@@ -13,10 +13,10 @@ react-native bundle --platform android --dev false --entry-file index.js --bundl
 # from project root folder
 
 cd android
-./gradlew assemblerealease
+./gradlew assemblerelease
 
 # install release apk to device
 # goto android sdk platform-tools folder
 
 CD Users\chong\AppData\Local\Android\Sdk\platform-tools
-adb install C:\dev\Teamcoop\android\app\build\outputs\apk\release\app-release.apk
+adb install D:\workspace\yana002\android\app\build\outputs\apk\release\app-release.apk
