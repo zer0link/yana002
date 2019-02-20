@@ -9,6 +9,7 @@
 import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, View,Alert,Button } from 'react-native';
 import firebase from 'react-native-firebase';
+import GeoFire from 'geofire';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -25,7 +26,8 @@ export default class App extends Component {
     this.state = {
       token: '',
       location: '',
-      deviceLocation: ''
+      deviceLocation: '',
+      distance: 0
     };
   }
 
@@ -34,8 +36,9 @@ export default class App extends Component {
       position => {
         const location = JSON.stringify(position);
   
-        this.setState({ location });
+        this.setState({ location:position });
         console.log(location);
+        console.log("position", this.state.location);
         firebase.database().ref('DeviceLocation').push({
           token: this.state.token,
           location: location
@@ -46,6 +49,8 @@ export default class App extends Component {
           //error callback
           alert("can't save " + error);
         })
+        
+        testGeoFire();
 
       },
       error =>
@@ -55,11 +60,52 @@ export default class App extends Component {
       },
       { enableHighAccuracy: false, timeout: 60000, maximumAge: 1000 }
     );
+
+    var testGeoFire = () =>{
+      var location = this.state.location.coords;
+      var firebaseRef = new firebase.database().ref('geofire') ;//new firebase("https://yana002-44365.firebaseio.com/geofire/");
+      this.geoFire = new GeoFire(firebaseRef);
+      console.log("location :" , location.latitude)
+      this.geoFire.set("weiyangListener", [location.latitude, location.longitude]).then(function() {
+        console.log("Provided key has been added to GeoFire");
+      }, function(error) {
+        console.log("Error: " + error);
+      });
+
+      this.geoQuery = this.geoFire.query({center:[location.latitude, location.longitude], radius: 10});
+
+      this.geoQuery.on("ready", function () {
+        console.log("GeoQuery has loaded and fired all other events for initial data");
+      });
+
+      this.geoQuery.on("key_entered", function (key, location, distance) {
+        console.log("entered");
+        this.setState({distance});
+      });
+
+      this.geoQuery.on("key_exited", function (key, location, distance) {
+        console.log("exited");
+        this.setState({distance});
+      });
+
+      this.geoQuery.on("key_moved", function (key, location, distance) {
+        console.log("moved");
+        this.setState({distance});
+      });
+    }
+    
   }
   componentDidMount() {
-    firebase.initializeApp({
-      databaseURL: 'https://yana002-44365.firebaseio.com/'
-    });
+    var config = {
+      apiKey: "AIzaSyBl-fHzZByHAT1t7l_axN-LoEK43HEcV-4",
+      authDomain: "yana002-44365.firebaseapp.com",
+      databaseURL: "https://yana002-44365.firebaseio.com",
+      projectId: "yana002-44365",
+      storageBucket: "yana002-44365.appspot.com",
+      messagingSenderId: "458306088909"
+    };
+    firebase.initializeApp(config);
+
     console.log('Component did mount2');
 
           firebase.messaging().requestPermission()
@@ -100,8 +146,9 @@ export default class App extends Component {
         <Text style={styles.instructions}>To get started, edit App.js</Text>
         <Text style={styles.instructions}>{instructions}</Text>
         <Text style={styles.instructions}>{this.state.token}</Text>
-        <Text>{this.state.location}</Text>
+        {/* <Text>{this.state.location}</Text> */}
         <Button title="Press here" onPress={this.findCoordinates}>Press me</Button>
+        <Text style={styles.instructions}>Location = {this.state.distance} km away from here</Text>
       </View>
     );
   }
