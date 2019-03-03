@@ -10,6 +10,7 @@ import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, View,Alert,Button } from 'react-native';
 import firebase from 'react-native-firebase';
 import GeoFire from 'geofire';
+import Map from './components/Map';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -29,6 +30,7 @@ export default class App extends Component {
       deviceLocation: '',
       distance: 0
     };
+    this.setDistanceToState = this.setDistanceToState.bind(this);
   }
 
   findCoordinates = () => {
@@ -63,38 +65,47 @@ export default class App extends Component {
 
     var testGeoFire = () =>{
       var location = this.state.location.coords;
-      var firebaseRef = new firebase.database().ref('geofire') ;//new firebase("https://yana002-44365.firebaseio.com/geofire/");
-      this.geoFire = new GeoFire(firebaseRef);
+      var firebaseRef = firebase.database().ref('geofire') ;
+      console.log(this);
+      var component = this;
+      var geoFire = new GeoFire(firebaseRef);
       console.log("location :" , location.latitude)
-      this.geoFire.set("weiyangListener", [location.latitude, location.longitude]).then(function() {
+      geoFire.set("weiyangListener", [location.latitude, location.longitude]).then(function() {
         console.log("Provided key has been added to GeoFire");
       }, function(error) {
         console.log("Error: " + error);
       });
 
-      this.geoQuery = this.geoFire.query({center:[location.latitude, location.longitude], radius: 10});
+      var geoQuery = geoFire.query({center:[location.latitude, location.longitude], radius: 10});
 
-      this.geoQuery.on("ready", function () {
+      geoQuery.on("ready", function () {
         console.log("GeoQuery has loaded and fired all other events for initial data");
       });
 
-      this.geoQuery.on("key_entered", function (key, location, distance) {
+      geoQuery.on("key_entered", function (key, location, distance) {
         console.log("entered");
-        this.setState({distance});
+        component.setState({distance});
       });
 
-      this.geoQuery.on("key_exited", function (key, location, distance) {
+      geoQuery.on("key_exited", function (key, location, distance) {
         console.log("exited");
-        this.setState({distance});
+        component.setState({distance});
+
       });
 
-      this.geoQuery.on("key_moved", function (key, location, distance) {
+      geoQuery.on("key_moved", function (key, location, distance) {
         console.log("moved");
-        this.setState({distance});
+        component.setState({distance});
       });
+      
     }
     
   }
+
+  setDistanceToState(distance) {
+    this.setState({distance});
+  }
+  
   componentDidMount() {
     var config = {
       apiKey: "AIzaSyBl-fHzZByHAT1t7l_axN-LoEK43HEcV-4",
@@ -149,6 +160,7 @@ export default class App extends Component {
         {/* <Text>{this.state.location}</Text> */}
         <Button title="Press here" onPress={this.findCoordinates}>Press me</Button>
         <Text style={styles.instructions}>Location = {this.state.distance} km away from here</Text>
+        <Map />
       </View>
     );
   }
