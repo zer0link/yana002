@@ -26,7 +26,12 @@ export default class App extends Component {
     super();
     this.state = {
       token: '',
-      location: '',
+      location: {
+        latitude: 0,
+        longitude: 0,
+        latitudeDelta: 0.015,
+        longitudeDelta: 0.0121,
+    },
       deviceLocation: '',
       distance: 0
     };
@@ -38,12 +43,12 @@ export default class App extends Component {
       position => {
         const location = JSON.stringify(position);
   
-        this.setState({ location:position });
-        console.log(location);
+        this.setState({ location: Object.assign( {} , this.state.location, position.coords) });
+        console.log(this.state.location);
         console.log("position", this.state.location);
         firebase.database().ref('DeviceLocation').push({
           token: this.state.token,
-          location: location
+          location: location.coords
         }).then((data) => {
 
           alert("save:" + location);
@@ -64,9 +69,8 @@ export default class App extends Component {
     );
 
     var testGeoFire = () =>{
-      var location = this.state.location.coords;
+      var location = this.state.location;
       var firebaseRef = firebase.database().ref('geofire') ;
-      console.log(this);
       var component = this;
       var geoFire = new GeoFire(firebaseRef);
       console.log("location :" , location.latitude)
@@ -90,14 +94,12 @@ export default class App extends Component {
       geoQuery.on("key_exited", function (key, location, distance) {
         console.log("exited");
         component.setState({distance});
-
       });
 
       geoQuery.on("key_moved", function (key, location, distance) {
         console.log("moved");
         component.setState({distance});
       });
-      
     }
     
   }
@@ -160,7 +162,7 @@ export default class App extends Component {
         {/* <Text>{this.state.location}</Text> */}
         <Button title="Press here" onPress={this.findCoordinates}>Press me</Button>
         <Text style={styles.instructions}>Location = {this.state.distance} km away from here</Text>
-        <Map />
+        <Map position={this.state.location}/>
       </View>
     );
   }
