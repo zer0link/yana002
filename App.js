@@ -31,7 +31,8 @@ export default class App extends Component {
         longitude: 0,
         latitudeDelta: 0.015,
         longitudeDelta: 0.0121,
-    },
+      },
+      markers: [],
       deviceLocation: '',
       distance: 0
     };
@@ -56,9 +57,8 @@ export default class App extends Component {
           //error callback
           alert("can't save " + error);
         })
-        
+        setMarkerState();
         testGeoFire();
-
       },
       error =>
       {
@@ -101,6 +101,28 @@ export default class App extends Component {
         component.setState({distance});
       });
     }
+
+    var setMarkerState = () =>{
+      var markers = this.state.markers;
+      var index = markers.findIndex((x)=>{return x.key == "Yourself"});
+      var latestMarker = {
+        coordinate:{latitude: this.state.location.latitude,
+                    longitude: this.state.location.longitude},
+        title: "Yourself",
+        description: "Your position",
+        key: "Yourself",
+        timestamp: new Date().getTime()
+      }
+      if (index < 0){
+        markers.push(latestMarker);
+      } else {
+        markers[index] = latestMarker;
+        console.log("latest marker ",latestMarker)
+      }
+      
+      console.log("markers ",markers);
+      this.setState({markers});
+    };
     
   }
 
@@ -153,6 +175,19 @@ export default class App extends Component {
 
 
   render() {
+    // markers.push({
+    //   coordinate:{latitude: this.state.location.latitude,
+    //               longitude: this.state.location.longitude},
+    //   title: "Yourself",
+    //   description: "Your position"
+    // });
+    // markers.push({
+    //   coordinate:{latitude: this.state.location.latitude - 0.01,
+    //               longitude: this.state.location.longitude- 0.01},
+    //   title: "New marker",
+    //   description: "Other position",
+    //   pinColor:"#0000ff"
+    // });
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>Welcome to React Native!</Text>
@@ -162,7 +197,7 @@ export default class App extends Component {
         {/* <Text>{this.state.location}</Text> */}
         <Button title="Press here" onPress={this.findCoordinates}>Press me</Button>
         <Text style={styles.instructions}>Location = {this.state.distance} km away from here</Text>
-        <Map position={this.state.location}/>
+        <Map position={this.state.location} markers={this.state.markers}/>
       </View>
     );
   }

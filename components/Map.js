@@ -1,4 +1,6 @@
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
+import { Platform, StyleSheet, Text, View,Alert,Button } from 'react-native';
+import React, { Component } from 'react';
 
 
 const styles = StyleSheet.create({
@@ -14,18 +16,33 @@ const styles = StyleSheet.create({
     },
    });
 
-   export default () => (
-    <View style={styles.container}>
-      <MapView
-        provider={PROVIDER_GOOGLE} // remove if not using Google Maps
-        style={styles.map}
-        region={{
-          latitude: 37.78825,
-          longitude: -122.4324,
-          latitudeDelta: 0.015,
-          longitudeDelta: 0.0121,
-        }}
-      >
-      </MapView>
-    </View>
- );
+   export default class Map extends Component{
+     render(){
+       var markers = [];
+       this.props.markers.map(marker =>{
+         markers.push(<Marker
+         coordinate = {marker.coordinate}
+         title = {marker.title}
+         description = {marker.description}
+         pinColor = {marker.pinColor}
+         />);
+       })
+       console.log(markers);
+       return (
+        <View style={styles.container}>
+        <MapView
+          provider={PROVIDER_GOOGLE} // remove if not using Google Maps
+          style={styles.map}
+          region={{
+            latitude: this.props.position.latitude,
+            longitude: this.props.position.longitude,
+            latitudeDelta: 0.015,
+            longitudeDelta: 0.0121,
+          }}
+          >
+          {markers}
+        </MapView>
+      </View>
+       )
+     }
+   }
