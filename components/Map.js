@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
        var markers = [];
        this.props.markers.map(marker =>{
          markers.push(<Marker
+         key={marker.key}
          coordinate = {marker.coordinate}
          title = {marker.title}
          description = {marker.description}
