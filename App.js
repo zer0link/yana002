@@ -9,10 +9,7 @@
 import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, View,Alert,Button } from 'react-native';
 import firebase from 'react-native-firebase';
-import InitGeoQuery from './functions/InitGeoQuery';
 import Map from './components/Map';
-import { connect } from 'react-redux';
-import { addPlace } from './actions/place';
 // import ListItem from './components/ListItem';
 
 const instructions = Platform.select({
@@ -30,13 +27,7 @@ class App extends Component {
     this.state = {
       test: '',
       token: '',
-      location: {
-        latitude: 0,
-        longitude: 0,
-        latitudeDelta: 0.015,
-        longitudeDelta: 0.0121,
-      },
-      markers: [],
+      location: null,
       deviceLocation: '',
       distance: 0,
       placeName: '',
@@ -47,6 +38,7 @@ class App extends Component {
  
 
   findCoordinates = () => {
+    // this.setState({ location: Object.assign( {} , this.state.location, {latitude:1,longitude:1}) });
     navigator.geolocation.getCurrentPosition(
       position => {
         const location = JSON.stringify(position);
@@ -64,8 +56,7 @@ class App extends Component {
           //error callback
           alert("can't save " + error);
         })
-        setMarkerState();
-        setGeoQueryEvents();
+        // setMarkerState();
       },
       error =>
       {
@@ -75,17 +66,7 @@ class App extends Component {
       { enableHighAccuracy: false, timeout: 60000, maximumAge: 1000 }
     );
 
-    var setGeoQueryEvents = () =>{
-      var firebaseRef = firebase.database().ref('geofire') ;
-      var initGeoQuery = new InitGeoQuery();
-      
-      initGeoQuery.on('update_markers', markers => {
-        // console.log('key is entered: ',location);
-        this.props.update(markers);
-      });
-      initGeoQuery.StartUp(firebaseRef, this.state.location, this); 
-    }
-
+   
     var setMarkerState = () =>{
       var markers = this.state.markers;
       var index = markers.findIndex((x)=>{return x.key == "Yourself"});
@@ -123,6 +104,7 @@ class App extends Component {
       storageBucket: "yana002-44365.appspot.com",
       messagingSenderId: "458306088909"
     };
+    
     firebase.initializeApp(config);
           firebase.messaging().requestPermission();
           setTimeout(() => {
@@ -149,6 +131,7 @@ class App extends Component {
 
 
   render() {
+    console.log("Rerender app.js", this.state.location);
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>Welcome to React Native!</Text>
@@ -159,7 +142,7 @@ class App extends Component {
         <Button title="Press here" onPress={this.findCoordinates}>Press me</Button>
         <Text style={styles.instructions}>Location = {this.state.distance} km away from here</Text>
         <Text style={styles.instructions}>Test value : {this.state.test}</Text>
-        <Map position={this.state.location} markers={this.state.markers}/>
+        <Map position={this.state.location} />
       </View>
     );
   }
@@ -184,20 +167,4 @@ const styles = StyleSheet.create({
   },
 });
 
-const mapStateToProps = state => {
-  return {
-    markers: state.places.places
-  }
-}
-
-const mapDispatchToProps = dispatch => {
-  return {
-    update: (markers) => {
-      dispatch(addPlace(markers))
-    }
-  }
-}
-
-
-export default connect(mapStateToProps, mapDispatchToProps)(App)
-// export default App
+export default App

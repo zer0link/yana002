@@ -3,27 +3,26 @@ const EventEmitter = require('events');
 
 export default class InitGeoQuery extends EventEmitter {
 
-  constructor(){
-    this.UpdateMarker = this.UpdateMarker.bind(this);
-  }
-
+  // constructor(){
+  //   this.UpdateMarker = this.UpdateMarker.bind(this);
+  // }
     StartUp(firebaseRef,location, component){
-      var geoFire = new GeoFire(firebaseRef);
+      component.geoFire = new GeoFire(firebaseRef);
       var component2 = this;
 
-      geoFire.set("weiyangListener", [location.latitude, location.longitude]).then(function() {
+      component.geoFire.set("weiyangListener1", [location.latitude, location.longitude]).then(function() {
         console.log("Provided key has been added to GeoFire");
       }, function(error) {
         console.log("Error: " + error);
       });
 
-      var geoQuery = geoFire.query({center:[location.latitude, location.longitude], radius: 100});
+      component._geoQuery = component.geoFire.query({center:[location.latitude, location.longitude], radius: 100});
 
-      geoQuery.on("ready", function () {
+      component._geoQuery.on("ready", function () {
         console.log("GeoQuery has loaded and fired all other events for initial data");
       });
 
-      geoQuery.on("key_entered", function (key, location, distance) {
+      component._geoQuery.on("key_entered", function (key, location, distance) {
         console.log("location : " ,location);
         var marker = {
             coordinate:{latitude: location[0],
@@ -35,12 +34,12 @@ export default class InitGeoQuery extends EventEmitter {
         component2.UpdateMarker(marker,component);
       });
 
-      geoQuery.on("key_exited", function (key, location, distance) {
+      component._geoQuery.on("key_exited", function (key, location, distance) {
         console.log("exited");
         component.setState({distance});
       });
 
-      geoQuery.on("key_moved", function (key, location, distance) {
+      component._geoQuery.on("key_moved", function (key, location, distance) {
         console.log("moved");
         var marker = {
             coordinate:{latitude: location[0],
@@ -51,6 +50,8 @@ export default class InitGeoQuery extends EventEmitter {
           };
         component2.UpdateMarker(marker,component);
       });
+
+      // return _geoQuery;
     }
 
     UpdateMarker = (marker,component) => {
