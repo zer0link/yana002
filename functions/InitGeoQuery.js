@@ -10,7 +10,7 @@ export default class InitGeoQuery extends EventEmitter {
       component.geoFire = new GeoFire(firebaseRef);
       var component2 = this;
 
-      component.geoFire.set("weiyangListener1", [location.latitude, location.longitude]).then(function() {
+      component.geoFire.set("wyangListener", [location.latitude, location.longitude]).then(function() {
         console.log("Provided key has been added to GeoFire");
       }, function(error) {
         console.log("Error: " + error);

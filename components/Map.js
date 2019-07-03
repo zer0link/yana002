@@ -28,9 +28,6 @@ const styles = StyleSheet.create({
        };
        console.log("Maps ", props.position);
      };
-
-     componentDidMount() {
-    }
     
     componentWillReceiveProps(props){
       if (props.position!=null){
@@ -52,7 +49,21 @@ const styles = StyleSheet.create({
       this.initGeoQuery.StartUp(firebaseRef, this.state.position, this); 
     }
 
+    SetWatchPosition(){
+      function success(pos) {
+        var crd = pos.coords;
+      
+        this._geoQuery.updateCriteria({center: [crd.latitutude,crd.longitude]})
+      }
 
+      options = {
+        enableHighAccuracy: false,
+        timeout: 5000,
+        maximumAge: 0
+      };
+
+      navigator.geolocation.watchPosition(success, error, options);
+    }
 
      render(){
        var markers = [];
