@@ -18,6 +18,8 @@ export default class InitGeoQuery extends EventEmitter {
 
       component._geoQuery = component.geoFire.query({center:[location.latitude, location.longitude], radius: 100});
 
+      
+
       component._geoQuery.on("ready", function () {
         console.log("GeoQuery has loaded and fired all other events for initial data");
       });

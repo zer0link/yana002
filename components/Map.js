@@ -26,6 +26,7 @@ const styles = StyleSheet.create({
          position: {latitude:0,longitude:0},
          geoQuery: null
        };
+       this.myName = "maps";
        console.log("Maps ", props.position);
      };
     
@@ -36,6 +37,10 @@ const styles = StyleSheet.create({
         this.SetGeoQueryEvents();
       }else{
       }
+    }
+
+    testfn() {
+      console.log("get in this function");
     }
     
     SetGeoQueryEvents  = () =>{
@@ -49,19 +54,24 @@ const styles = StyleSheet.create({
       this.initGeoQuery.StartUp(firebaseRef, this.state.position, this); 
     }
 
-    SetWatchPosition(){
-      function success(pos) {
-        var crd = pos.coords;
-      
-        this._geoQuery.updateCriteria({center: [crd.latitutude,crd.longitude]})
-      }
 
+    success(component,latitude,longitude) {
+      console.log("position updated with moving");
+      component._geoQuery.updateCriteria({center: [latitude,longitude]})
+    }
+
+    error(){
+      console.log("failed to watch position");
+    }
+
+
+    SetWatchPosition(){
+      
       options = {
         enableHighAccuracy: false,
         timeout: 5000,
         maximumAge: 0
       };
-
       navigator.geolocation.watchPosition(success, error, options);
     }
 

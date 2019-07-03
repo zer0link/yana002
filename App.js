@@ -31,13 +31,17 @@ class App extends Component {
       deviceLocation: '',
       distance: 0,
       placeName: '',
-      places: []
+      places: [],
+      locationNow: ''
     };
+    this.watchId = 0;
     this.setDistanceToState = this.setDistanceToState.bind(this);
+    this.watchLocation = this.watchLocation.bind(this);
   }
  
 
   findCoordinates = () => {
+    console.log("button pressed, please wait");
     // this.setState({ location: Object.assign( {} , this.state.location, {latitude:1,longitude:1}) });
     navigator.geolocation.getCurrentPosition(
       position => {
@@ -50,7 +54,6 @@ class App extends Component {
           token: this.state.token,
           location: location.coords
         }).then((data) => {
-
           alert("save:" + location);
         }).catch((error) => {
           //error callback
@@ -95,6 +98,26 @@ class App extends Component {
     this.setState({distance});
   }
   
+
+  watchLocation(){
+    options = {
+      enableHighAccuracy: false,
+      timeout: 5000,
+      maximumAge: 1000
+   };
+   var component = this.myMap;
+   var appComponent = this;
+   console.log("mymap:",component);
+   this.watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        console.log("mymap:",component)
+        console.log("position from watch",pos)
+        component.success(this.myMap, pos.coords.latitude, pos.coords.longitude);
+        appComponent.setState({locationNow: `${pos.coords.latitude}, ${pos.coords.longitude}`});
+      },
+      (err)=>{console.log("watch error ", err)},
+      options);
+  }
   componentDidMount() {
     var config = {
       apiKey: "AIzaSyBl-fHzZByHAT1t7l_axN-LoEK43HEcV-4",
@@ -142,7 +165,9 @@ class App extends Component {
         <Button title="Press here" onPress={this.findCoordinates}>Press me</Button>
         <Text style={styles.instructions}>Location = {this.state.distance} km away from here</Text>
         <Text style={styles.instructions}>Test value : {this.state.test}</Text>
-        <Map position={this.state.location} />
+        <Map position={this.state.location} ref={(abc) => {this.myMap = abc} } />
+        <Button title="Alert watch id" onPress={this.watchLocation} />
+        <Text style={styles.instructions}>{this.state.locationNow}</Text>
       </View>
     );
   }
