@@ -6,6 +6,7 @@ export default class InitGeoQuery extends EventEmitter {
   // constructor(){
   //   this.UpdateMarker = this.UpdateMarker.bind(this);
   // }
+
     StartUp(firebaseRef,location, component){
       component.geoFire = new GeoFire(firebaseRef);
       var component2 = this;
@@ -17,8 +18,6 @@ export default class InitGeoQuery extends EventEmitter {
       });
 
       component._geoQuery = component.geoFire.query({center:[location.latitude, location.longitude], radius: 100});
-
-      
 
       component._geoQuery.on("ready", function () {
         console.log("GeoQuery has loaded and fired all other events for initial data");
@@ -52,8 +51,6 @@ export default class InitGeoQuery extends EventEmitter {
           };
         component2.UpdateMarker(marker,component);
       });
-
-      // return _geoQuery;
     }
 
     UpdateMarker = (marker,component) => {

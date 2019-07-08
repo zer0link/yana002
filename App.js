@@ -7,7 +7,7 @@
  */
 
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View,Alert,Button } from 'react-native';
+import { Platform, StyleSheet, Text, View, Alert, Button, TouchableOpacity } from 'react-native';
 import firebase from 'react-native-firebase';
 import Map from './components/Map';
 // import ListItem from './components/ListItem';
@@ -32,92 +32,57 @@ class App extends Component {
       distance: 0,
       placeName: '',
       places: [],
-      locationNow: ''
+      locationNow: '',
+      statusText: '',
+      firstTimeLoaded: false
     };
     this.watchId = 0;
-    this.setDistanceToState = this.setDistanceToState.bind(this);
     this.watchLocation = this.watchLocation.bind(this);
-  }
- 
-
-  findCoordinates = () => {
-    console.log("button pressed, please wait");
-    // this.setState({ location: Object.assign( {} , this.state.location, {latitude:1,longitude:1}) });
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const location = JSON.stringify(position);
-  
-        this.setState({ location: Object.assign( {} , this.state.location, position.coords) });
-        console.log(this.state.location);
-        console.log("position", this.state.location);
-        firebase.database().ref('DeviceLocation').push({
-          token: this.state.token,
-          location: location.coords
-        }).then((data) => {
-          alert("save:" + location);
-        }).catch((error) => {
-          //error callback
-          alert("can't save " + error);
-        })
-        // setMarkerState();
-      },
-      error =>
-      {
-        Alert.alert(error.message);
-        console.log(error);
-      },
-      { enableHighAccuracy: false, timeout: 60000, maximumAge: 1000 }
-    );
-
-   
-    var setMarkerState = () =>{
-      var markers = this.state.markers;
-      var index = markers.findIndex((x)=>{return x.key == "Yourself"});
-      var latestMarker = {
-        coordinate:{latitude: this.state.location.latitude,
-                    longitude: this.state.location.longitude},
-        title: "Yourself",
-        description: "Your position",
-        key: "Yourself",
-        timestamp: new Date().getTime()
-      }
-      if (index < 0){
-        markers.push(latestMarker);
-      } else {
-        markers[index] = latestMarker;
-        console.log("latest marker ",latestMarker)
-      }
-      
-      console.log("markers ",markers);
-      this.setState({markers});
-    };
-    
+    // this.findCoordinates = this.findCoordinates.bind(this);
   }
 
-  setDistanceToState(distance) {
-    this.setState({distance});
-  }
-  
+  watchLocation() {
+    this.setState({ statusText: "watchLocation called." });
 
-  watchLocation(){
-    options = {
-      enableHighAccuracy: false,
-      timeout: 5000,
-      maximumAge: 1000
-   };
-   var component = this.myMap;
-   var appComponent = this;
-   console.log("mymap:",component);
-   this.watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        console.log("mymap:",component)
-        console.log("position from watch",pos)
-        component.success(this.myMap, pos.coords.latitude, pos.coords.longitude);
-        appComponent.setState({locationNow: `${pos.coords.latitude}, ${pos.coords.longitude}`});
-      },
-      (err)=>{console.log("watch error ", err)},
-      options);
+    var appComponent = this;
+    var myMap = this.myMap;
+    //console.log("mymap:", component);
+
+    if (!appComponent.state.firstTimeLoaded) {
+      this.setState({ statusText: "getCurrentPosition called." });
+
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          this.setState({ statusText: `getCurrentPosition: ${pos.coords.longitude}, ${pos.coords.latitude} ` });
+          appComponent.setState({ firstTimeLoaded: true, location: Object.assign({}, this.state.location, pos.coords) });
+          this.setState({ statusText: "watchPosition called." });
+
+          appComponent.watchId = navigator.geolocation.watchPosition(
+            (pos) => {
+              var today = new Date();
+              var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+              appComponent.setState({ statusText: `Time: ${time} : ${pos.coords.latitude}, ${pos.coords.longitude}` });
+              myMap.UpdateCriteria(myMap, pos.coords.latitude, pos.coords.longitude);
+            },
+            (err) => {
+              console.log("watchPosition failed", error);
+              appComponent.setState({ statusText: "watchPosition failed" });
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 2000,
+              maximumAge: 3600000
+            });
+        },
+        error => {
+          console.log("getCurrentPosition failed", error);
+        },
+        { enableHighAccuracy: true, timeout: 2000, maximumAge: 3600000 }
+      );
+      return;
+    }
   }
+
   componentDidMount() {
     var config = {
       apiKey: "AIzaSyBl-fHzZByHAT1t7l_axN-LoEK43HEcV-4",
@@ -127,27 +92,27 @@ class App extends Component {
       storageBucket: "yana002-44365.appspot.com",
       messagingSenderId: "458306088909"
     };
-    
+
     firebase.initializeApp(config);
-          firebase.messaging().requestPermission();
-          setTimeout(() => {
-            firebase.messaging().getToken()
-              .then(token => {
+    firebase.messaging().requestPermission();
+    setTimeout(() => {
+      firebase.messaging().getToken()
+        .then(token => {
 
-                firebase.database().ref("Token").push({
-                  token: token
-                }).then((data) => {
-                }).catch((error) => {
-                  //error callback
-                  alert("can't save " + error);
-                })
+          firebase.database().ref("Token").push({
+            token: token
+          }).then((data) => {
+          }).catch((error) => {
+            //error callback
+            alert("can't save " + error);
+          })
 
-                this.setState({ token });
-              })
-              .catch(err => {
-                alert(err);
-              });
-          }, 3000);
+          this.setState({ token });
+        })
+        .catch(err => {
+          alert(err);
+        });
+    }, 3000);
 
     this.doThings;
   }
@@ -162,12 +127,15 @@ class App extends Component {
         <Text style={styles.instructions}>{instructions}</Text>
         <Text style={styles.instructions}>{this.state.token}</Text>
         {/* <Text>{this.state.location}</Text> */}
-        <Button title="Press here" onPress={this.findCoordinates}>Press me</Button>
+        {/* <Button title="Press here" onPress={this.findCoordinates}>Press me</Button> */}
         <Text style={styles.instructions}>Location = {this.state.distance} km away from here</Text>
         <Text style={styles.instructions}>Test value : {this.state.test}</Text>
-        <Map position={this.state.location} ref={(abc) => {this.myMap = abc} } />
-        <Button title="Alert watch id" onPress={this.watchLocation} />
+        <View style={styles.mapContainer}>
+          <Map firstTimeLoaded={this.state.firstTimeLoaded} position={this.state.location} ref={(abc) => { this.myMap = abc }} />
+        </View>
+        <Button title="Alert watch id" onPress={this.watchLocation}>Press me</Button>
         <Text style={styles.instructions}>{this.state.locationNow}</Text>
+        <Text style={styles.instructions}>{this.state.statusText}</Text>
       </View>
     );
   }
@@ -179,6 +147,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
+  },
+  mapContainer: {
+    ...StyleSheet.absoluteFillObject,
+    height: 300,
+    width: 400,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
   welcome: {
     fontSize: 20,

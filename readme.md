@@ -20,3 +20,7 @@ cd android
 
 CD Users\chong\AppData\Local\Android\Sdk\platform-tools
 adb install D:\workspace\yana002\android\app\build\outputs\apk\release\app-release.apk
+adb install -r /Users/key/Documents/yana002/android/app/build/outputs/apk/release/app-release.apk
+
+## debug with android simulator
+use localhost instead 
