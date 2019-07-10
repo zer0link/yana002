@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.facebook.react.ReactApplication;
 import com.airbnb.android.react.maps.MapsPackage;
+import com.agontuk.RNFusedLocation.RNFusedLocationPackage;
 import io.invertase.firebase.RNFirebasePackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
 import io.invertase.firebase.database.RNFirebaseDatabasePackage;
@@ -30,8 +31,8 @@ public class MainApplication extends Application implements ReactApplication {
             new MapsPackage(),
             new RNFirebasePackage(),
             new RNFirebaseMessagingPackage(),
-            new RNFirebaseDatabasePackage()
-  
+            new RNFirebaseDatabasePackage(),
+            new RNFusedLocationPackage()  
       );
     }
 

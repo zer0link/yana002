@@ -7,9 +7,11 @@
  */
 
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View, Alert, Button, TouchableOpacity } from 'react-native';
+import { Platform, StyleSheet, Text, View, Button } from 'react-native';
 import firebase from 'react-native-firebase';
 import Map from './components/Map';
+import Geolocation from 'react-native-geolocation-service';
+const test =  require('./functions/RequestLocationPermission');
 // import ListItem from './components/ListItem';
 
 const instructions = Platform.select({
@@ -51,13 +53,13 @@ class App extends Component {
     if (!appComponent.state.firstTimeLoaded) {
       this.setState({ statusText: "getCurrentPosition called." });
 
-      navigator.geolocation.getCurrentPosition(
+      Geolocation.getCurrentPosition(
         pos => {
           this.setState({ statusText: `getCurrentPosition: ${pos.coords.longitude}, ${pos.coords.latitude} ` });
           appComponent.setState({ firstTimeLoaded: true, location: Object.assign({}, this.state.location, pos.coords) });
           this.setState({ statusText: "watchPosition called." });
 
-          appComponent.watchId = navigator.geolocation.watchPosition(
+          appComponent.watchId = Geolocation.watchPosition(
             (pos) => {
               var today = new Date();
               var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
@@ -70,20 +72,24 @@ class App extends Component {
             },
             {
               enableHighAccuracy: true,
-              timeout: 2000,
+              timeout: 30000,
               maximumAge: 3600000
             });
         },
         error => {
-          console.log("getCurrentPosition failed", error);
+          appComponent.setState({ statusText: "getCurrentPosition failed" });
+          alert(error)
+          console.log("getCurrentPosition failed, ",error)
         },
-        { enableHighAccuracy: true, timeout: 2000, maximumAge: 3600000 }
+        { enableHighAccuracy: true, timeout: 30000, maximumAge: 3600000 }
       );
       return;
     }
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    await test.requestLocationPermission();
+
     var config = {
       apiKey: "AIzaSyBl-fHzZByHAT1t7l_axN-LoEK43HEcV-4",
       authDomain: "yana002-44365.firebaseapp.com",
