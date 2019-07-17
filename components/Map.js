@@ -40,8 +40,8 @@ export default class Map extends Component {
     var firebaseRef = firebase.database().ref('geofire');
     this.initGeoQuery = new InitGeoQuery();
 
-    this.initGeoQuery.on('update_markers', markers => {
-      this.setState(markers);
+    this.initGeoQuery.on('update_marker', marker => {
+      this.UpdateMarker(marker);
     });
 
     this.initGeoQuery.StartUp(firebaseRef, this.state.position, this);
@@ -50,8 +50,19 @@ export default class Map extends Component {
   UpdateCriteria(component, latitude, longitude) {
     console.log("position updated with moving");
     this.UpdateMyMarker({latitude, longitude});
-    component._geoQuery.updateCriteria({ center: [latitude, longitude] })
+    _geoQuery.updateCriteria({ center: [latitude, longitude] })
   }
+
+  UpdateMarker = (marker) => {
+    var markers = this.state.markers;
+    var index = markers.findIndex((x)=>{return x.key == marker.key});
+    if (index < 0){
+      markers.push(marker);
+    } else {
+      markers[index] = marker;
+    }
+    this.setState({markers});
+  };
 
   UpdateMyMarker(myLocation){
     //let's Map handle markers
