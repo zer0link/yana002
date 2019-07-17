@@ -1,29 +1,12 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow
- */
-
 import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, View, Button } from 'react-native';
 import firebase from 'react-native-firebase';
 import Map from './components/Map';
 import Geolocation from 'react-native-geolocation-service';
+//import {requestLocationPermission} from './functions/RequestLocationPermission';
 const test =  require('./functions/RequestLocationPermission');
-// import ListItem from './components/ListItem';
-
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
-
 
 class App extends Component {
-
   constructor() {
     super();
     this.state = {
@@ -43,53 +26,39 @@ class App extends Component {
     // this.findCoordinates = this.findCoordinates.bind(this);
   }
 
-  watchLocation() {
+  async watchLocation() {
+    await test.requestLocationPermission(); 
     this.setState({ statusText: "watchLocation called." });
 
-    var appComponent = this;
+    var app = this;
     var myMap = this.myMap;
     //console.log("mymap:", component);
 
-    if (!appComponent.state.firstTimeLoaded) {
-      this.setState({ statusText: "getCurrentPosition called." });
-
-      Geolocation.getCurrentPosition(
-        pos => {
-          this.setState({ statusText: `getCurrentPosition: ${pos.coords.longitude}, ${pos.coords.latitude} ` });
-          appComponent.setState({ firstTimeLoaded: true, location: Object.assign({}, this.state.location, pos.coords) });
-          this.setState({ statusText: "watchPosition called." });
-
-          appComponent.watchId = Geolocation.watchPosition(
+    if (!app.state.firstTimeLoaded) {
+      this.setState({ statusText: "watchPosition called." });
+      app.watchId = Geolocation.watchPosition(
             (pos) => {
+              app.setState({ firstTimeLoaded: true, location: Object.assign({}, this.state.location, pos.coords) });
               var today = new Date();
               var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-              appComponent.setState({ statusText: `Time: ${time} : ${pos.coords.latitude}, ${pos.coords.longitude}` });
+              app.setState({ statusText: `Time: ${time} : ${pos.coords.latitude}, ${pos.coords.longitude}` });
               myMap.UpdateCriteria(myMap, pos.coords.latitude, pos.coords.longitude);
             },
             (err) => {
               console.log("watchPosition failed", error);
-              appComponent.setState({ statusText: "watchPosition failed" });
+              app.setState({ statusText: "watchPosition failed" });
             },
             {
               enableHighAccuracy: true,
               timeout: 30000,
               maximumAge: 3600000
             });
-        },
-        error => {
-          appComponent.setState({ statusText: "getCurrentPosition failed" });
-          alert(error)
-          console.log("getCurrentPosition failed, ",error)
-        },
-        { enableHighAccuracy: true, timeout: 30000, maximumAge: 3600000 }
-      );
+ 
       return;
     }
   }
 
   async componentDidMount() {
-    await test.requestLocationPermission();
-
     var config = {
       apiKey: "AIzaSyBl-fHzZByHAT1t7l_axN-LoEK43HEcV-4",
       authDomain: "yana002-44365.firebaseapp.com",
@@ -100,6 +69,7 @@ class App extends Component {
     };
 
     firebase.initializeApp(config);
+    await this.watchLocation();
     firebase.messaging().requestPermission();
     setTimeout(() => {
       firebase.messaging().getToken()
@@ -120,7 +90,7 @@ class App extends Component {
         });
     }, 3000);
 
-    this.doThings;
+    // this.doThings;
   }
 
 
@@ -130,7 +100,7 @@ class App extends Component {
       <View style={styles.container}>
         <Text style={styles.welcome}>Welcome to React Native!</Text>
         <Text style={styles.instructions}>To get started, edit App.js</Text>
-        <Text style={styles.instructions}>{instructions}</Text>
+        {/* <Text style={styles.instructions}>{instructions}</Text> */}
         <Text style={styles.instructions}>{this.state.token}</Text>
         {/* <Text>{this.state.location}</Text> */}
         {/* <Button title="Press here" onPress={this.findCoordinates}>Press me</Button> */}
