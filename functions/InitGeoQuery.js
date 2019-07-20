@@ -18,11 +18,11 @@ export default class InitGeoQuery extends EventEmitter {
     };
   }
 
-  StartUp(firebaseRef, location, component) {
+  StartUp(firebaseRef, location, component, myName) {
     _geoFire = new GeoFire(firebaseRef);
     var me = this;
 
-    _geoFire.set("wyangListener3", [location.latitude, location.longitude]).then(function () {
+    _geoFire.set("LLL", [location.latitude, location.longitude]).then(function () {
     }, function (error) {
     });
 
@@ -32,7 +32,7 @@ export default class InitGeoQuery extends EventEmitter {
     });
 
     _geoQuery.on("key_entered", function (key, location, distance) {
-      const marker = BuildMarker(key, location, distance);
+      const marker = me.BuildMarker(key, location, distance);
       me.emit('update_marker', marker);
     });
 
@@ -41,7 +41,7 @@ export default class InitGeoQuery extends EventEmitter {
     });
 
     _geoQuery.on("key_moved", function (key, location, distance) {
-      const marker = BuildMarker(key, location, distance);
+      const marker = me.BuildMarker(key, location, distance);
       me.emit('update_marker', marker);
     });
   }

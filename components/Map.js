@@ -27,13 +27,6 @@ export default class Map extends Component {
       this.setState({ position: props.position });
       this.SetGeoQueryEvents();
     }
-
-    // if (props.position != null) {
-    //   this.setState({ position: props.position });
-    //   console.log("Postion updated via component update");
-    //   this.SetGeoQueryEvents();
-    // } else {
-    // }
   }
 
   SetGeoQueryEvents = () => {
@@ -44,7 +37,7 @@ export default class Map extends Component {
       this.UpdateMarker(marker);
     });
 
-    this.initGeoQuery.StartUp(firebaseRef, this.state.position, this);
+    this.initGeoQuery.StartUp(firebaseRef, this.state.position, this, this.props.user);
   }
 
   UpdateCriteria(component, latitude, longitude) {
@@ -65,9 +58,7 @@ export default class Map extends Component {
   };
 
   UpdateMyMarker(myLocation){
-    //let's Map handle markers
     var markers = this.state.markers;
-    // var markers = this.markers;
     
     var index = markers.findIndex((x)=>{return x.key == "Yourself"});
     var latestMarker = {
@@ -131,8 +122,9 @@ export default class Map extends Component {
 
 const styles = StyleSheet.create({
   container: {
+    flex:1,
     ...StyleSheet.absoluteFillObject,
-    height: 300,
+    height: 500,
     width: 400,
     justifyContent: 'flex-end',
     alignItems: 'center',
