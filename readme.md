@@ -24,3 +24,7 @@ adb install -r /Users/key/Documents/yana002/android/app/build/outputs/apk/releas
 
 ## debug with android simulator
 use localhost instead 
+
+## Failed to install the following Android SDK packages as some licences have not been accepted. build-tools;28.0.3 Android SDK Build-Tools 28.0.3
+yes | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-28"
+yes | $ANDROID_HOME/tools/bin/sdkmanager "build-tools;28.0.3"
