@@ -11,7 +11,7 @@ export default class Login extends Component {
             <View style={styles.container}>
                 <View>
                     <Text>Name</Text>
-                    <TextInput onChangeText={(name) => { this.setState({name}) }} placeholder="Name" value="test"></TextInput>
+                    <TextInput onChangeText={(name) => { this.setState({name}) }} placeholder="Name"></TextInput>
                 </View>
                 <Button title="Login" onPress={() => this.props.AfterLogin({name:this.state.name})}></Button>
             </View>

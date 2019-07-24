@@ -11,7 +11,8 @@ export default class Map extends Component {
     this.state = {
       markers: [],
       position: { latitude: 0, longitude: 0 },
-      geoQuery: null
+      geoQuery: null,
+      region: null
     };
     this.UpdateMyMarker = this.UpdateMyMarker.bind(this);
     this.UpdateCriteria = this.UpdateCriteria.bind(this);
@@ -23,10 +24,20 @@ export default class Map extends Component {
   componentWillReceiveProps(props) {
     if(props.firstTimeLoaded){
       console.log("componentWillReceiveProps");
+      this.UpdateMyPosition(props.position);
       this.UpdateMyMarker(props.position);
       this.setState({ position: props.position });
       this.SetGeoQueryEvents();
     }
+  }
+  
+  UpdateMyPosition(position) {
+    console.log("Update my position");
+    
+    this.setState({region: {latitude: position.latitude,
+                            longitude: position.longitude,
+                            latitudeDelta: 0.15,
+                            longitudeDelta: 0.15}});
   }
 
   SetGeoQueryEvents = () => {
@@ -37,7 +48,7 @@ export default class Map extends Component {
       this.UpdateMarker(marker);
     });
 
-    this.initGeoQuery.StartUp(firebaseRef, this.state.position, this, this.props.user);
+    this.initGeoQuery.StartUp(firebaseRef, this.state.position, this, this.props.user.name);
   }
 
   UpdateCriteria(component, latitude, longitude) {
@@ -55,6 +66,7 @@ export default class Map extends Component {
       markers[index] = marker;
     }
     this.setState({markers});
+    console.log("Markers",markers);
   };
 
   UpdateMyMarker(myLocation){
@@ -89,6 +101,10 @@ export default class Map extends Component {
     navigator.geolocation.watchPosition(success, error, options);
   }
 
+  onRegionChangeComplete = (region) =>{
+    this.setState({region});
+  }
+
   render() {
     var markers = [];
     this.state.markers.map(marker => {
@@ -106,12 +122,8 @@ export default class Map extends Component {
         <MapView
           provider={PROVIDER_GOOGLE} // remove if not using Google Maps
           style={styles.map}
-          region={{
-            latitude: this.state.position.latitude,
-            longitude: this.state.position.longitude,
-            latitudeDelta: 0.015,
-            longitudeDelta: 0.0121,
-          }}
+          region={this.state.region}
+          onRegionChangeComplete = {this.onRegionChangeComplete}
         >
           {markers}
         </MapView>

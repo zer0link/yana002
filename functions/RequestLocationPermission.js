@@ -3,7 +3,6 @@ import { PermissionsAndroid } from 'react-native';
 export async function RequestLocationPermission() 
 {
   try {
-    console.warn('requestLocationPermission');
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       {

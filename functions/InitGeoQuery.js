@@ -22,7 +22,7 @@ export default class InitGeoQuery extends EventEmitter {
     _geoFire = new GeoFire(firebaseRef);
     var me = this;
 
-    _geoFire.set("LLL", [location.latitude, location.longitude]).then(function () {
+    _geoFire.set(myName, [location.latitude, location.longitude]).then(function () {
     }, function (error) {
     });
 
